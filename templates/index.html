@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OpenAI Chatbot">
+    <title>OpenAI Chatbot</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: #1abc9c;
+            color: white;
+            font-size: 24px;
+        }
+
+        .chat-window {
+            position: fixed;
+            bottom: 35px;
+            right: 80px; /* Adjusted to avoid overlap with chat icon */
+            width: 300px;
+            max-height: 80vh;
+            background: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 12px 12px 0 0;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            overflow: hidden;
+            transition: height 0.5s ease, opacity 0.5s ease;
+        }
+
+        .chat-window.open {
+            display: flex;
+            height: 500px; /* Adjust height as needed */
+            opacity: 1;
+        }
+
+        .chat-window.hidden {
+            display: none;
+            height: 0;
+            opacity: 0;
+        }
+
+        .chat-header {
+            padding: 16px;
+            background: #1abc9c;
+            color: white;
+            font-size: 18px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            scroll-behavior: smooth; /* Smooth scrolling */
+        }
+
+        .message {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            max-width: 80%;
+            border-radius: 12px;
+        }
+
+        .message .icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .messagebot {
+            display: flex;
+            align-items: center;
+            background: #43da75;
+            color: white;
+            align-self: flex-start;
+            flex-direction: row-reverse;
+            margin-left: auto; /* Align right */
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px; /* Space between messages */
+        }
+
+        .messageuser {
+            display: flex;
+            align-items: center;
+            background: #1abc9c;
+            color: white;
+            align-self: flex-end;
+            flex-direction: row;
+            margin-right: auto; /* Align left */
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px; /* Space between messages */
+        }
+
+        .messageuser .icon {
+            background: url('/static/images/user.png.png') no-repeat center center;
+            background-size: contain;
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        /* .messagebot .icon {
+            background: url('/static/images/Bot.png.png') no-repeat center center;
+            background-size: contain;
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        } */
+/* 
+        .message .bot .icon {
+            background: url('static/images/bot.png') no-repeat center center;
+        } */
+
+        /* .message .user .icon {
+            background: url('user-icon.png') no-repeat center center;
+        } */
+
+        .chat-input {
+            padding: 16px;
+            background: #1abc9c;
+            display: flex;
+            align-items: flex-start;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input textarea {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            background: white;
+            border-radius: 20px;
+            resize: vertical;
+            width: 160px;
+            min-height: 40px; /* Initial height */
+            max-height: 150px; /* Max height */
+            overflow-y: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .chat-input textarea:focus {
+            outline: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .chat-input input[type=submit] {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            background: #43da75;
+            color: white;
+            cursor: pointer;
+            border-radius: 20px;
+            margin-top: 15px;
+            margin-left: 10px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .chat-input input[type=submit]:hover {
+            background: #36b04a;
+            transform: scale(1.05);
+        }
+
+        .chat-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1abc9c;
+            color: white;
+            border-radius: 50%;
+            width: 60px; /* Normal size */
+            height: 60px; /* Normal size */
+            display: flex; /* Ensure it's visible */
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            font-size: 30px; /* Adjusted size */
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .chat-icon:hover {
+            background-color: #45a049;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Appointment Booking With AI Chatbot</h1>
+    </div>
+    
+    <div class="chat-window hidden" id="chat-window">
+        <div class="chat-header">
+            <span>Chat with Us</span>
+            <span id="close-chat" style="cursor: pointer; font-size: 24px;">&times;</span>
+        </div>
+        <div class="chat-messages">
+            <!-- Messages will be displayed here -->
+        </div>
+        <div class="chat-input">
+            <form id="chat-form">
+                <textarea name="message" placeholder="Type your message" autocomplete="off" autofocus></textarea>
+            </form>
+            <input id="send-button" type="submit" value="Send">
+        </div>
+    </div>
+
+    <div class="chat-icon" id="open-chat">
+        💬
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        // Function to show the chat icon after 3 seconds
+        setTimeout(function() {
+            $('#open-chat').fadeIn();
+        }, 3000);
+
+        // Toggle chat window visibility with height transition
+        $('#open-chat').click(function() {
+            var chatWindow = $('#chat-window');
+            var chatIcon = $('#open-chat');
+
+            if (chatWindow.hasClass('hidden')) {
+                chatWindow.removeClass('hidden').addClass('open');
+            } else {
+                chatWindow.removeClass('open').addClass('hidden');
+            }
+        });
+
+        $('#close-chat').click(function() {
+            var chatWindow = $('#chat-window');
+            chatWindow.removeClass('open').addClass('hidden');
+        });
+
+        function toggleInputElements(disabled) {
+            $('textarea[name=message]').prop('disabled', disabled);
+            $('#send-button').prop('disabled', disabled);
+        }
+
+        function adjustTextareaHeight() {
+            var textarea = $('textarea[name=message]')[0];
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px'; // Max height
+        }
+
+        $('#chat-form').submit(function (e) {
+            e.preventDefault();
+            var userMessage = $('textarea[name=message]').val();
+
+            if (userMessage === '') {
+                return;
+            }
+
+            toggleInputElements(true);
+
+            // Append user's message
+            $('.chat-messages').append('<div class="messageuser"><div class="icon"></div><div>' + userMessage.replace(/\n/g, '<br>') + '</div></div>');
+            $('textarea[name=message]').val('');
+            adjustTextareaHeight();
+            $('.chat-messages').scrollTop($('.chat-messages')[0].scrollHeight);
+
+            // Post user message to server and handle response
+            $.post('/chat', {prompt: userMessage}, function (data) {
+                // Append bot's response
+                $('.chat-messages').append('<div class="messagebot"><div class="icon"></div><div>' + data.response + '</div></div>');
+                $('.chat-messages').scrollTop($('.chat-messages')[0].scrollHeight);
+                toggleInputElements(false);
+                adjustTextareaHeight();
+            });
+        });
+
+        $(document).on('keydown', 'textarea[name=message]', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                $('#chat-form').submit();
+            }
+        });
+
+        adjustTextareaHeight();
+    </script>
+</body>
+</html>
