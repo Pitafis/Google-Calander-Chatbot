@@ -42,7 +42,7 @@ if not creds or not creds.valid:
 service = build('calendar', 'v3', credentials=creds)
 
 GPT_MODEL = "gpt-3.5-turbo-0613"
-openai_api_key = "sk-proj-mZlcMaG0OV8Xbi0gmJCxT3BlbkFJ6jFuKVszNOatklwrjB6z"
+openai_api_key = "YOUR_API_KEY"
 day_list = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 TIMEZONE = pytz.timezone('Asia/Kolkata')
 
